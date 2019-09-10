@@ -1,7 +1,10 @@
+package search;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
+import util.CharHandler;
 
 /**
  * Generates low and high indices in wordfile in which to search for the user input word
@@ -151,7 +154,6 @@ public class HashIndex {
 		
 		int i1 = charArrayToIndex(c1.getData());
 		int i2 = charArrayToIndex(c2.getData());
-		System.out.println(i1 + " " + i2);
 		return new int[] {this.masterIndex[i1], this.masterIndex[i2]};
 	}
 	
@@ -171,9 +173,7 @@ public class HashIndex {
 	 * @throws IllegalArgumentException
 	 */
 	private int charToIndex(char c) throws IllegalArgumentException{
-		if (c == 0) {
-			return 0;
-		}
+		if (c == 0) return 0;
 		
 		if ('a' <= c && c <= 'z') return c - 'a' + 1;
 		if (c == 'ä') return 'z'-'a'+2;

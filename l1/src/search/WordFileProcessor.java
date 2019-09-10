@@ -1,3 +1,5 @@
+package search;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -31,10 +33,6 @@ public class WordFileProcessor {
 			wordindex += index[i];
 		}
 		
-		System.out.println(lower + " " + mid + " " + upper);
-		try {Thread.sleep(10);}catch(Exception e){}
-		// word has been found, return its index
-		// System.out.println(lower + " " + upper);
 		if (word.equals(this.searchWord)) {
 			return wordindex;
 		} else if (this.searchWord.compareTo(word) < 0) {
