@@ -5,7 +5,7 @@ package util;
  */
 public class CharHandler implements Comparable<CharHandler> {
 
-	private char[] data = new char[3];
+	private char[] chars = new char[3];
 	
 	public CharHandler(String seed) {
 		this(seed.substring(0, Math.min(seed.length(), 3)).toCharArray());
@@ -14,13 +14,12 @@ public class CharHandler implements Comparable<CharHandler> {
 	public CharHandler(char[] seed) {
 
 		if (seed.length == 0) {
-			// If a String of length 0 has been passed here, something is terribly wrong
-			new Exception("Seed length 0 in CharHandler").printStackTrace();
+			new Exception("Seed length 0 in util.CharHandler(char[])").printStackTrace();
 			System.exit(1);
 		}
 
 		for (int i = 0; i < seed.length; i++) {
-			data[i-(seed.length-3)] = seed[i];
+			chars[i-(seed.length-3)] = seed[i];
 		}
 	}
 
@@ -30,12 +29,12 @@ public class CharHandler implements Comparable<CharHandler> {
 	 * @return
 	 */
 	public CharHandler next() {
-		CharHandler next = new CharHandler(this.data);
+		CharHandler next = new CharHandler(this.chars);
 
-		for (int i = 0; i < next.data.length; i++) {
-			if (next.data[i] == 0){
+		for (int i = 0; i < next.chars.length; i++) {
+			if (next.chars[i] == 0) {
 				next.leftshift();
-				next.data[2] = 'a';
+				next.chars[2] = 'a';
 				return next;
 			}
 		}
@@ -51,14 +50,14 @@ public class CharHandler implements Comparable<CharHandler> {
 	private void incrementIndex(int i) {
 		if (i < 0 || i > 2) return;
 	
-		else if(this.data[i] == 'ö'){
+		else if(this.chars[i] == 'ö'){
 			this.incrementIndex(i-1);
 			this.rightshift();
 		}
-		else if (this.data[i] == 'å') this.data[i] = 'ö';
-		else if (this.data[i] == 'ä') this.data[i] = 'å';
-		else if (this.data[i] == 'z') this.data[i] = 'ä';
-		else this.data[i]++;
+		else if (this.chars[i] == 'å') this.chars[i] = 'ö';
+		else if (this.chars[i] == 'ä') this.chars[i] = 'å';
+		else if (this.chars[i] == 'z') this.chars[i] = 'ä';
+		else this.chars[i]++;
 	}
 
 	/**
@@ -67,18 +66,18 @@ public class CharHandler implements Comparable<CharHandler> {
 	 * [*, a, a] -> [a, a, 0]
 	 */
 	private void leftshift(){
-		this.data[0] = this.data[1];
-		this.data[1] = this.data[2];
-		this.data[2] = 0;
+		this.chars[0] = this.chars[1];
+		this.chars[1] = this.chars[2];
+		this.chars[2] = 0;
 	}
 
 	/**
 	 * As leftshift, but to the right
 	 */
 	private void rightshift(){
-		this.data[2] = this.data[1];
-		this.data[1] = this.data[0];
-		this.data[0] = 0;
+		this.chars[2] = this.chars[1];
+		this.chars[1] = this.chars[0];
+		this.chars[0] = 0;
 	}
 
 	@Override
@@ -93,12 +92,12 @@ public class CharHandler implements Comparable<CharHandler> {
 	@Override
 	public int compareTo(CharHandler other) {
 		for (int i = 0; i < 3; i++) {
-			if (data[i] != other.data[i]) return data[i] - other.data[i];
+			if (chars[i] != other.chars[i]) return chars[i] - other.chars[i];
 		}
 		return 0;
 	}
 
-	public char[] getData() { 
-		return data; 
+	public char[] getChars() { 
+		return chars; 
 	}
 }

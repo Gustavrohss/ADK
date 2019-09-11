@@ -1,69 +1,39 @@
 package search;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class WordFile {
 	
-	private static RandomAccessFile file;
-	
-	
+	private RandomAccessFile wordfile;
 	private String word;
-	private int ubound;
-	private int lbound;
 	
-	
-	public WordFile(String word, int lbound, int ubound) throws FileNotFoundException {
-		
-		if (file == null) {
-			file = new RandomAccessFile(new File("/home/jonas/Documents/Kurser/ADK/lab1/files/wordfile"), "r");
-		}
-		
+	public WordFile(String word, RandomAccessFile wordfile) {
+		this.wordfile = wordfile;
 		this.word = word.toLowerCase();
-		this.lbound = lbound;
-		this.ubound = ubound;
-		
 	}
-	
-	/**
-	 * Get the range of the indexfile between where index for this word exists
-	 * @return
-	 */
-	public int[] getIndexRange() {
-		
-		try {
-			return this.binSearch(lbound, ubound);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
-	}
-	
 	
 	public int[] binSearch(int lower, int upper) throws IOException {
 		
 		int mid = (lower + upper)/2;
-		if(mid %2 != 0) {
-			mid -=1;
+		if (mid % 2 != 0) {
+			mid--;
 		}
-		if(mid == lower || mid == upper) {
+		if (mid == lower || mid == upper) {
 			return null;
 		}
 		
-		file.seek(mid);
+		wordfile.seek(mid);
 		this.seekLineStart();
 		
 		String data = this.readline();
-		String word = this.getWordFromData(data);
-		
+		String readWord = this.getWordFromData(data);
 		
 		// word has been found, return its index
-		if(word.equals(this.word)) {
+		if (readWord.equals(this.word)) {
 			
-			System.out.println(word);
+			//System.out.println(readWord);
+			//System.out.println(this.word);
 			
 			int startindex = this.getIndexFromData(data);
 			// read next line to get index file interval
@@ -72,7 +42,7 @@ public class WordFile {
 			return new int[] {startindex, endindex};
 		}
 		
-		if(this.word.compareTo(word) < 0) {
+		if (this.word.compareTo(readWord) < 0) {
 			return this.binSearch(lower, mid);
 		}
 		else {
@@ -90,38 +60,57 @@ public class WordFile {
 	private String readline() throws IOException {
 		
 		StringBuilder sb = new StringBuilder();
-		char[] c = new char[4];
+		char[] chars = new char[4];
 		
-		while(!this.applyMask(c)) {
-			c = this.shiftLeft(c);
-			c[c.length-1] = file.readChar();
-			sb.append(c[c.length-1]);
+		while(!this.applyMask(chars)) {
+			chars = this.shiftLeft(chars);
+			chars[chars.length-1] = wordfile.readChar();
+			sb.append(chars[chars.length-1]);
 		}
 		
 		return sb.toString();
+	}
+
+	private boolean applyMask(char[] chars) {
+		if (chars.length != 4) {
+			throw new IllegalArgumentException("char[] data must be length 4, but received length " + String.valueOf(chars.length));
+		}
+		if (chars[0] != ' ') {
+			return false;
+		}
+		if (chars[3] != '\n') {
+			return false;
+		}
 		
+		return true;
+	}
+	
+	private char[] shiftLeft(char[] chars) {
+		for(int i = 0; i < chars.length-1; i++) {
+			chars[i] = chars[i+1];
+		}
+		chars[chars.length-1] = 0;
+		return chars;
+	}
+	
+	private char[] shiftRight(char[] chars) {
+		for(int i = chars.length - 1; i > 0; i--) {
+			chars[i] = chars[i-1];
+		}
+		chars[0] = 0;
+		return chars;
 	}
 	
 	private String getWordFromData(String data) {
-		
-		String[] array = data.split(" ", 2);
-		String word = array[0];
-		return word;
-		
+		// Word is kept in the first half of data.
+		return data.split(" ", 2)[0];
 	}
 	
 	private int getIndexFromData(String data) {
-		
-		String[] array = data.split(" ", 2);
-		char[] index = array[1].trim().toCharArray();
-		
-		int wordindex = 0;
-		for(int i=0; i<index.length; i++) {
-			wordindex = wordindex << 16;
-			wordindex += index[i];
-		}
-		return wordindex;
-		
+		char[] indexAsCharacters = data.split(" ", 2)[1].trim().toCharArray();
+		if (indexAsCharacters.length != 2) throw new IllegalArgumentException("Should be two bytes, found " + indexAsCharacters.length);
+	
+		return (indexAsCharacters[0] << 16) + indexAsCharacters[1];
 	}
 	
 	/**
@@ -133,59 +122,15 @@ public class WordFile {
 		
 		char[] c = new char[4];
 		
-		while(!this.applyMask(c)) {
-			if(file.getFilePointer() <= 4) {
-				file.seek(0);
+		while (!this.applyMask(c)) {
+			if (wordfile.getFilePointer() <= 4) {
+				wordfile.seek(0);
 				return;
 			}
-			file.seek(file.getFilePointer()-4);
+			wordfile.seek(wordfile.getFilePointer() - 4);
 			c = this.shiftRight(c);
-			c[0] = file.readChar();
-
+			c[0] = wordfile.readChar();
 		}
-		
-		file.seek(file.getFilePointer()+2*3);
-		
+		wordfile.seek(wordfile.getFilePointer() + 6);
 	}
-	
-	
-	
-	private boolean applyMask(char[] data) {
-		
-		if(data.length != 4) {
-			throw new IllegalArgumentException("char[] data must be length 4, but received length " + String.valueOf(data.length));
-		}
-		
-		
-		if(data[0] != ' ') {
-			return false;
-		}
-		if(data[3] != '\n') {
-			return false;
-		}
-		
-		return true;
-		
-	}
-	
-	private char[] shiftLeft(char[] c) {
-		
-		for(int i=0; i<c.length-1; i++) {
-			c[i] = c[i+1];
-		}
-		c[c.length-1] = 0;
-		return c;
-		
-	}
-	
-	private char[] shiftRight(char[] c) {
-		
-		for(int i=c.length-1; i>0; i--) {
-			c[i] = c[i-1];
-		}
-		c[0] = 0;
-		return c;
-	}
-	
-
 }

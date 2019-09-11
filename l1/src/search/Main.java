@@ -1,24 +1,30 @@
 package search;
 
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.io.File;
 import java.util.Scanner;
 
 public class Main {
 	
 	public final static String charset = "ISO-8859-1";
+	public final static String filePath = "files/";
 	
 	public static void main(String[] args) {
 		
-		try {
+		try (
+			RandomAccessFile hashfile = new RandomAccessFile(new File(filePath + "hashfile"), "r");
+			RandomAccessFile wordfile = new RandomAccessFile(new File(filePath + "wordfile"), "r");
+			RandomAccessFile indexfile = new RandomAccessFile(new File(filePath + "indexfile"), "r");
+			RandomAccessFile korpus = new RandomAccessFile(new File(filePath + "korpus"), "r");
+		) {
 			
-			
-			String word = "ö";
-			HashIndex i = new HashIndex();
+			String word = args[0];
+			HashIndex i = new HashIndex(hashfile);
 			int[] index = i.getRange(word);
 			
-			
-			WordFile f = new WordFile(word, index[0], index[1]);
-			int[] indexRange = f.getIndexRange();
+			WordFile f = new WordFile(word, wordfile);
+			int[] indexRange = f.binSearch(index[0], index[1]);
 			
 			if(indexRange == null) {
 				System.out.println("Word does not exist");
@@ -43,21 +49,10 @@ public class Main {
 				System.out.println(reader.next());
 			}
 			
-			
-//			RandomAccessFile indexfile = new RandomAccessFile(new File("/home/jonas/Documents/Kurser/ADK/lab1/files/indexfile"), "r");
-//			indexfile.seek(indexRange[0]);
-//			int korpusindex = indexfile.readInt();
-//			
-//			RandomAccessFile korpus = new RandomAccessFile(new File("/home/jonas/Documents/Kurser/ADK/lab1/korpus"), "r");
-//			korpus.seek(korpusindex);
-//			System.out.println(korpusindex);
-//			System.out.println(korpus.readLine());
-			
-			
-			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Error in search.Main.main(String[])");
 			e.printStackTrace();
+			System.exit(1);
 		}
 		
 	}

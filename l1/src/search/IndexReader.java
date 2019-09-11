@@ -1,8 +1,6 @@
 package search;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Iterator;
@@ -13,7 +11,6 @@ public class IndexReader implements Iterator<String>, Iterable<String> {
 	
 	private int lower;
 	private int upper;
-	
 	
 	List<Integer> indices;
 	
@@ -26,8 +23,8 @@ public class IndexReader implements Iterator<String>, Iterable<String> {
 		this.lower = lower;
 		this.upper = upper;
 		
-		this.indexFile = new RandomAccessFile(new File("/home/jonas/Documents/Kurser/ADK/lab1/files/indexfile"), "r");
-		this.dataFile = new RandomAccessFile(new File("/home/jonas/Documents/Kurser/ADK/lab1/korpus"), "r");
+		this.indexFile = new RandomAccessFile(new File("files/indexfile"), "r");
+		this.dataFile = new RandomAccessFile(new File("files/korpus"), "r");
 		
 	}
 	

@@ -6,7 +6,7 @@ import java.util.*;
 public class Main {
 
 	public final static String charset = "ISO-8859-1";
-	public final static String filePath = "../files/";
+	public final static String filePath = "files/";
 
 	/**
 	 * Files, filereaders.
@@ -41,6 +41,7 @@ public class Main {
 			indexfile = new RandomAccessFile(new File(filePath + "indexfile"), "rw");
 
 		} catch (IOException e) {
+			System.out.println("Error in util.Main.init()");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -53,6 +54,7 @@ public class Main {
 			if(wordfile != null) wordfile.close();
 			if(indexfile != null) indexfile.close();
 		} catch (Exception e) {
+			System.out.println("Error in util.Main.end()");
 			e.printStackTrace();
 		}
 	}
@@ -78,6 +80,7 @@ public class Main {
 			}
 
 		} catch (IOException e) {
+			System.out.println("Error in util.Main.run()");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -108,7 +111,7 @@ public class Main {
 
 		do {
 			lastShorthand = lastShorthand.next();
-			for (char c : lastShorthand.getData()) {
+			for (char c : lastShorthand.getChars()) {
 				hashfile.writeChar(c);
 			}
 			hashfile.writeInt(wordFilePointer);
