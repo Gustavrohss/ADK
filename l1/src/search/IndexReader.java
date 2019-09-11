@@ -1,5 +1,6 @@
 package search;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -11,20 +12,21 @@ public class IndexReader implements Iterator<String>, Iterable<String> {
 	
 	private int lower;
 	private int upper;
+	private String inputword;
 	
 	List<Integer> indices;
 	
-	private RandomAccessFile indexFile;
+	private RandomAccessFile indexfile;
 	private RandomAccessFile dataFile;
 	
-	
-	public IndexReader(int lower, int upper) throws IOException {
+	public IndexReader(int lower, int upper, String inputword,
+	RandomAccessFile indexfile, RandomAccessFile korpus) throws IOException {
 		
 		this.lower = lower;
 		this.upper = upper;
-		
-		this.indexFile = new RandomAccessFile(new File("files/indexfile"), "r");
-		this.dataFile = new RandomAccessFile(new File("files/korpus"), "r");
+		this.inputword = inputword;
+		this.indexfile = indexfile;
+		this.dataFile = korpus;
 		
 	}
 	
@@ -37,29 +39,31 @@ public class IndexReader implements Iterator<String>, Iterable<String> {
 		this.readIndices();
 	}
 	
-	
 	private String readIndex(int index) throws IOException {
 		StringBuilder sb = new StringBuilder();
-		dataFile.seek(index-15*2);
+		dataFile.seek(Math.max(index - 30, 0));
 		
-		for(int i=0; i<60; i++) {
-			sb.append((char) dataFile.read());
+		for (int i = 0; i < 60 + inputword.length(); i++) {
+			try {
+				sb.append((char) dataFile.read());
+			} catch (EOFException e) {
+				break;
+			}
 		}
 		
 		return sb.toString().replace("\n", " ");
 		
 	}
 	
-	
-	
 	private void readIndices() throws IOException {
+		this.indexfile.seek(lower);
 		
-		this.indexFile.seek(lower);
-		
-		while(this.indexFile.getFilePointer() < this.upper) {
-			indices.add(this.indexFile.readInt());
+		int index = -1;
+		while(true) {
+			index = this.indexfile.readInt();
+			if (index == Integer.MAX_VALUE) break;
+			this.indices.add(index);
 		}
-		
 	}
 
 	public int size() {
@@ -89,6 +93,4 @@ public class IndexReader implements Iterator<String>, Iterable<String> {
 	public Iterator<String> iterator() {
 		return this;
 	}
-	
-
 }

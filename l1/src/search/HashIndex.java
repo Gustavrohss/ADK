@@ -5,22 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
-
 import util.CharHandler;
 
 public class HashIndex {
-	
-	public static void main(String[] args) {
-		try {
-			HashIndex i = new HashIndex(new RandomAccessFile(new File("files/hashfile"), "r"));
-			int[] index = i.getRange("a");
-			System.out.println(index[1] - index[0]);
-			System.out.println(Arrays.toString(index));
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	private int[] indices;
 	
@@ -35,63 +22,24 @@ public class HashIndex {
 	 * @throws IOException
 	 */
 	private void buildIndices(RandomAccessFile hashfile) throws IOException {
-		char[][] data;
-		char[] chars;
-		char[] index;
+		String line;
+		String[] data;
+		String word;
+		int index;
 		
 		while(true) {
-			data = this.readline(hashfile);
-			if(data == null) {
+			line = Main.readLine(hashfile);
+
+			if (line == null || line.length() == 0) {
 				break;
 			}
-			chars = data[0];
-			index = data[1];
-			
-			int wordindex = 0;
-			for(int i = 0; i < index.length; i++) {
-				wordindex = wordindex << 8;
-				wordindex += index[i];
-			}
+			data = line.split(" ");
+			word = data[0];
+			index = Integer.parseInt(data[1]);
 
-			this.addToIndices(chars, wordindex);
-			
-			if(new String(chars).equals("ööö")) {
-				break;
-			}
+			addToIndices(new CharHandler(word).getChars(), index);
+			if (word.equals("ööö")) break;
 		}
-		
-	}
-
-	/**
-	 * Reads a line from the hashfile and returns a char-array of length 2, 
-	 * where the first index has the three character string of this hash, 
-	 * and the second index has a four character representation of the int-index.
-	 * The higher 8 bits in the index-characters are all zero, that is, it is a 
-	 * two byte character representing each byte in the four byte int.
-	 * If the end of file has been reached, return null.
-	 * @param reader The Bufferedreader object reading from the hashfile 
-	 * @return a length two char[][]
-	 * @throws IOException, if the file cannot be read.
-	 */
-	private char[][] readline(RandomAccessFile reader) throws IOException {
-		
-		char[] chars = new char[3];
-		char[] index = new char[4];
-		
-		try {
-			for (int i = 0; i < chars.length; i++) {
-				chars[i] = reader.readChar();
-			}
-			for (int i = 0; i < index.length; i++) {
-				index[i] = (char) reader.readUnsignedByte();
-			}
-		} catch (EOFException e) {
-			System.out.println("Error in search.HashIndex.readline(RandomAccessFile)");
-			return null;
-		}
-		
-		return new char[][] {chars, index};
-		
 	}
 	
 	private void addToIndices(char[] key, int index) {
@@ -103,23 +51,12 @@ public class HashIndex {
 	 * and can only contain characters a'z,ä,å,ö.
 	 * @param key The chars to hash
 	 * @return an integer index in the range [0 27000)
-	 * @throws IllegalArgumentException if an illegal character has been entered
 	 */
-	public static int charArrayToIndex(char[] key) throws IllegalArgumentException{
-		if(key.length != 3) {
-			throw new IllegalArgumentException("Char key must be of length 3, but received "
-					+ "key of length " + String.valueOf(key.length));
-			
-		}
-		
+	public static int charArrayToIndex(char[] key) {
 		int val = 0;
 		
 		for (int i = 0; i < 3; i++) {
-			try {
-				val += charToIndex(key[i]) * Math.pow(30, 2-i);
-			} catch (IllegalArgumentException e) {
-				throw new IllegalArgumentException(e.getMessage() + " in " + Arrays.toString(key));
-			}
+			val += charToIndex(key[i]) * Math.pow(30, 2-i);
 		}
 		return val;
 	}
@@ -147,8 +84,7 @@ public class HashIndex {
 		else if (c == 'ö') {
 			return 'z'-'a'+4;
 		}
-		
-		throw new IllegalArgumentException(String.format("Illegal char '%s' given", c));
+		return -1;
 	}
 	
 	/**
@@ -194,9 +130,4 @@ public class HashIndex {
 	public int get(char[] key) {
 		return this.indices[HashIndex.charArrayToIndex(key)];
 	}
-	
-	
-	
-	
-	
 }

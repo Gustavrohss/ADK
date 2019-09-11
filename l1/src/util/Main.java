@@ -94,10 +94,11 @@ public class Main {
 	private void processWord(List<Integer> indices) throws IOException {
 		indexFilePointer = (int) indexfile.getFilePointer();
 		for (int i : indices) indexfile.writeInt(i);
+		indexfile.writeInt(Integer.MAX_VALUE);
 		wordFilePointer = (int) wordfile.getFilePointer();
 		wordfile.writeChars(currentWord); 
 		wordfile.writeChar(' ');
-		wordfile.writeInt(indexFilePointer);
+		wordfile.writeChars(String.valueOf(indexFilePointer));
 		wordfile.writeChar('\n');
 
 	}
@@ -113,9 +114,11 @@ public class Main {
 		do {
 			lastShorthand = lastShorthand.next();
 			for (char c : lastShorthand.getChars()) {
-				hashfile.writeChar(c);
+				if (c > 0) hashfile.writeChar(c);
 			}
-			hashfile.writeInt(wordFilePointer);
-		} while (current.compareTo(lastShorthand) > 0);
+			hashfile.writeChar(' ');
+			hashfile.writeChars(String.valueOf(wordFilePointer));
+			hashfile.writeChar('\n');
+		} while (!current.equals(lastShorthand));
 	}
 }

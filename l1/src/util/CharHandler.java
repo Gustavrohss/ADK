@@ -3,7 +3,7 @@ package util;
 /**
  * Wrapper class for handling 3-character arrays
  */
-public class CharHandler implements Comparable<CharHandler> {
+public class CharHandler {
 
 	private char[] chars = new char[3];
 	
@@ -86,15 +86,12 @@ public class CharHandler implements Comparable<CharHandler> {
 			return false;
 		}
 		CharHandler ch = (CharHandler) o;
-		return this.compareTo(ch) == 0;
+		return chars[0] == ch.chars[0] &&
+		chars[1] == ch.chars[1] &&
+		chars[2] == ch.chars[2];
 	}
 
-	@Override
-	public int compareTo(CharHandler other) {
-		return new String(this.chars).trim().compareTo(new String(other.chars).trim());
-	}
-
-	public char[] getChars() { 
-		return chars; 
+	public char[] getChars() {
+		return chars;
 	}
 }
