@@ -99,6 +99,7 @@ public class Main {
 		wordfile.writeChar(' ');
 		wordfile.writeInt(indexFilePointer);
 		wordfile.writeChar('\n');
+
 	}
 
 

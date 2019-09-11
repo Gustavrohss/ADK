@@ -108,9 +108,13 @@ public class WordFile {
 	
 	private int getIndexFromData(String data) {
 		char[] indexAsCharacters = data.split(" ", 2)[1].trim().toCharArray();
-		if (indexAsCharacters.length != 2) throw new IllegalArgumentException("Should be two bytes, found " + indexAsCharacters.length);
-	
-		return (indexAsCharacters[0] << 16) + indexAsCharacters[1];
+
+		int indexAsInt = 0;
+		for (int i = 0; i < indexAsCharacters.length; i++) {
+			indexAsInt <<= 16;
+			indexAsInt += indexAsCharacters[i];
+		}
+		return indexAsInt;
 	}
 	
 	/**

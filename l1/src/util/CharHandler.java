@@ -91,10 +91,7 @@ public class CharHandler implements Comparable<CharHandler> {
 
 	@Override
 	public int compareTo(CharHandler other) {
-		for (int i = 0; i < 3; i++) {
-			if (chars[i] != other.chars[i]) return chars[i] - other.chars[i];
-		}
-		return 0;
+		return new String(this.chars).trim().compareTo(new String(other.chars).trim());
 	}
 
 	public char[] getChars() { 
