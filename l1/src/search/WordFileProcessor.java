@@ -15,6 +15,8 @@ public class WordFileProcessor {
 	
 	public int[] binSearch(int lower, int upper) throws IOException {
 		
+		if (upper == -1) upper = (int) this.wordfile.length();
+				
 		int mid = (lower + upper)/2;
 		if (mid % 2 != 0) {
 			mid--;
@@ -27,6 +29,7 @@ public class WordFileProcessor {
 		this.seekLineStart();
 		
 		String data = Main.readLine(wordfile);
+		//System.out.println(data);
 		String readWord = this.getWordFromData(data);
 		
 		// word has been found, return its index
@@ -87,7 +90,9 @@ public class WordFileProcessor {
 	}
 	
 	private int getIndexFromData(String data) {
+		try {
 		return Integer.parseInt(data.split(" ", 2)[1]);
+		} catch (Exception e) {return 0;}
 	}
 	
 	/**

@@ -31,6 +31,7 @@ public class Main {
 	}
 
 	private static boolean accepted(String in) {
+		if (in.length() == 0) return false;
 		for (char c : in.toCharArray()) {
 			if ((c < 'a' || c > 'z') && c != 'å' && c != 'ä' && c != 'ö') return false;
 		}
@@ -70,6 +71,7 @@ public class Main {
 
 			HashIndex hashindex = new HashIndex(hashfile);
 			int[] index = hashindex.getRange(word);
+			//System.out.println(index[0] + " " + index[1]);
 			
 			WordFileProcessor wordfileProcessor = new WordFileProcessor(word, wordfile);
 			int[] indexRange = wordfileProcessor.binSearch(index[0], index[1]);
@@ -102,6 +104,7 @@ public class Main {
 			e.printStackTrace();
 			System.exit(1);
 		} catch (ArrayIndexOutOfBoundsException e) {
+			e.printStackTrace();	
 			System.out.println("Please enter a word to search for.");
 		}
 	}

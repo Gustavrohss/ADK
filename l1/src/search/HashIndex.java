@@ -117,7 +117,9 @@ public class HashIndex {
 		
 		int i1 = HashIndex.charArrayToIndex(c1.getChars());
 		int i2 = HashIndex.charArrayToIndex(c2.getChars());
-		
+		if (Arrays.equals(new char[] {0, 0, 0}, c2.getChars())) {
+			return new int[] {this.indices[i1], -1};
+		}
 		return new int[] {this.indices[i1], this.indices[i2]};
 		
 	}

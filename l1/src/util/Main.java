@@ -79,6 +79,11 @@ public class Main {
 				indices = new LinkedList<>();
 			}
 
+			indices.add(Integer.parseInt(arr[1]));
+			currentWord = arr[0];
+			processWord(indices);
+			writeHash();
+
 		} catch (IOException e) {
 			System.out.println("Error in util.Main.run()");
 			e.printStackTrace();
