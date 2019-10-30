@@ -1,24 +1,15 @@
 import java.util.*;
 import java.io.*;
 
-/**
- * Tar en biparit graf på standard input och konstruerar en flödesgraf.
- */
 class ToBiparite {
 
-    // |x|, |y|
     static int xs;
     static int ys;
+    static int maxVertex;
 
     public static void main(String[] args) throws Exception {
-        readBiparite();
-    }
-
-    public static void readBiparite() throws Exception {
-
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String szs[] = in.readLine().split(" ");
-        
         // x size, y size, edges size where G = (x union y, edges)
         // sint(x) equals Integer.parseInt(x)
         xs = sint(szs[0]);
@@ -43,12 +34,12 @@ class ToBiparite {
         for (int v : x) edges.add(new Edge(1, v));
         for (int w : y) edges.add(new Edge(w, xs + ys + 2));
 
-        // Print data.
-        System.out.println(xs + ys + 2);
-        System.out.print(1 + " ");
-        System.out.println(xs + ys + 2);
-        System.out.println(edges.size());
-        for (Edge edge : edges) System.out.println(edge.toString() + " 1");
+        int outSize = xs + ys + 2;
+        int outSrc = 1;
+        int outSnk = xs + ys + 2;
+        maxVertex = xs + ys + 1;
+
+        MaxFlow.maxFlow(outSize, outSrc, outSnk, edges);
     }
 
     public static int sint(String in) {

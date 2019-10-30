@@ -126,23 +126,14 @@ class Graph {
         return tot;
     }
 
-    /**
-     * Med grafen tolkad som flödesgraf;
-     * printar:
-     *  <antalet kanter med positivt flöde>
-     *  <varje sådan kant på format "u v" >
-     */
-    public void printPosFlowEdges() {
-        int tot = 0;
-        LinkedList<String> prnt = new LinkedList<>();
-        // Graph indexing starts from 1
+    public void populatePosFlowEdgeData(LinkedList<Integer> out) {
+        LinkedList<Integer> prnt = new LinkedList<>();
         for (int u = 1; u < data.size(); u++) 
             for (Edge e : data.get(u)) 
                 if (e.v > 0) {
-                    tot++;
-                    prnt.add(u + " " + e.toString());
+                    out.add(u);
+                    out.add(e.u);
                 }
-        System.out.println(tot);
-        for (String s : prnt) System.out.println(s);
+        for (int x : prnt) out.add(x);
     }
 }
