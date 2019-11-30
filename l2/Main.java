@@ -20,7 +20,7 @@ public class Main {
     return list;
   }
 
-  public static void main(String args[]) throws IOException {
+  public static void main(String args[]) throws IOException, InterruptedException {
     
     BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
     // Säkrast att specificera att UTF-8 ska användas, för vissa system har annan
@@ -28,13 +28,16 @@ public class Main {
     
     List<String> wordList = readWordList(stdin);
     String word;
+    List<Wrapper> threads = new LinkedList<>();
     while ((word = stdin.readLine()) != null) {
-      ClosestWords closestWords = new ClosestWords(word, wordList);
-      System.out.print(word + " (" + closestWords.getMinDistance() + ")");
-      for (String w : closestWords.getClosestWords())
-        System.out.print(" " + w);
-      System.out.println();
+      Wrapper w = new Wrapper(word, wordList);
+      threads.add(w);
+      w.start();
     }
-
+    
+    for (Wrapper w : threads) {
+      w.join();
+      w.print();
+    }
   }
 }

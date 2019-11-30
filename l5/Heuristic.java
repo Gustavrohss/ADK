@@ -64,25 +64,31 @@ class Heuristic {
         // Attempt very naively to assign as many roles as possible to each actor
         for (int i = 3; i <= instance.k; i++) {
             for (Role r : instance.roles) {
-                if (r.contains(i)) {
+                if (currentAssignment.get(r) == null && r.contains(i)) {
                     currentAssignment.put(r, i);
+
+                    // Current performance critical code
+                    // Can we make verify (much) faster?
+                    // Like, a fuckload faster
+                    // Might need to redesign scenes/roles/actors (as they are represented now)
+
                     if (Verifier.partialVerify(currentAssignment, 
-                        instance.scenes, instance.roles, instance.n + instance.k - 1)) 
-                        continue;
+                        instance.scenes, instance.roles)) {
+                            // do nothing
+                    }
                     else {
                         currentAssignment.remove(r, i);
                     }
+
+                    //
                 }
             }
         }
 
-        // Finally, for unassigned roles, assign a superactor
-        int superActorCount = instance.k + 1;
-        for (Role r : instance.roles) {
-            if (currentAssignment.get(r) == null) {
-                currentAssignment.put(r, superActorCount++);
-            }
-        }
+        int sa = instance.k + 1;
+        for (Role r : instance.roles)
+            if (currentAssignment.get(r) == null) 
+                currentAssignment.put(r, sa++);
     }
 
     @Override
@@ -90,9 +96,32 @@ class Heuristic {
         return currentAssignment != null ? currentAssignment.toString() : "No current assignment";
     }
 
+    public void printSolution() {
+        HashSet<Integer> assigned = new HashSet<>();
+        for (int v : currentAssignment.values())
+            assigned.add(v);
+
+        System.out.println(assigned.size());
+
+        for (int actor : assigned) {
+            String s = "";
+            int count = 0;
+            for (Role r : currentAssignment.keySet()) {
+                if (currentAssignment.get(r) == actor) {
+                    s += " " + r.getId();
+                    count++;
+                }
+            }
+            s = actor + " " + count + s;
+            System.out.println(s);
+        }
+
+    }
+
     public static void main(String[] args) {
-        Heuristic heu = new Heuristic(readRBInstance());
-        System.out.println(heu);
+        RBInstanceBean bean = readRBInstance();
+        Heuristic heu = new Heuristic(bean);
+        heu.printSolution();
     }
 
     private static RBInstanceBean readRBInstance() {
