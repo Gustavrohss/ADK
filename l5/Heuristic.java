@@ -1,181 +1,100 @@
-import java.io.*;
-import java.util.*;
-
-/**
- * Heuristic:
- * Solves the Rollbesättningsproblem (RB) using a heuristic.
- * Cheats. (Superactors)
- * 
- * RBInstanceBean is used to describe an instance of RB.
- * All instances read are yes-instances, thanks to the use of superactors.
- * This Bean is read through a method that reads an RB instance on standard input.
- * The Bean is then passed to the Heuristic class constructor.
- * 
- * A naive and poor solution is first generated.
- * This solution is then to be used in some heuristic.
- * Notably, local search.
- */
+import java.util.ArrayList;
+import java.util.Random;
 
 class Heuristic {
 
-    private Map<Role, Integer> currentAssignment;
+    public final Random rng = new Random();
+    public Instance instance;
 
-    public Heuristic(RBInstanceBean instance) {
+    public Heuristic(Instance i) {
+        this(i.n, i.s, i.k, i.roles, i.scenes, i.actors);
+        instance = i;
+    }
+
+    public Heuristic(int n, int s, int k, ArrayList<Role> roles, ArrayList<Scene> scenes, ArrayList<Actor> actors) {
         
-        currentAssignment = new HashMap<>();
+        Actor d1 = Actor.d1;
+        Actor d2 = Actor.d2;
 
-        // Construct naive solution for local search
-
-        /* First, assign roles to divas
-           Find their respective possible roles,
-           ensure compatibility between any two of them
-           At least one solution is ensured by problem description
-           Behavior is undefined otherwise
-         */
-
-        ArrayList<Role> rd1 = new ArrayList<>();
-        ArrayList<Role> rd2 = new ArrayList<>();
-        for (Role r : instance.roles) {
-            if (r.contains(1)) rd1.add(r);
-            if (r.contains(2)) rd2.add(r);
-        }
-
+        // Divas
         roleloop:
-        for (Role d1 : rd1) for (Role d2 : rd2) {
-            boolean compatible = true;
+        for (Role r1 : d1.canPlay) for (Role r2 : d2.canPlay) {
+            if (r1.equals(r2)) continue;
 
+            boolean compatible = true;
             sceneloop:
-            for (Scene s : instance.scenes) {
-                if (s.contains(d1) && s.contains(d2)) {
+            for (Scene s1 : r1.inScenes) {
+                if (r2.inScenes.contains(s1)) {
                     compatible = false;
                     break sceneloop;
                 }
             }
-            
+
             if (compatible) {
-                currentAssignment.put(d1, 1);
-                currentAssignment.put(d2, 2);
+                d1.assign(r1);
+                d2.assign(r2);
                 break roleloop;
             }
         }
 
-        // Time to fill the rest of the assignment
-
-        // Attempt very naively to assign as many roles as possible to each actor
-        for (int i = 3; i <= instance.k; i++) {
-            for (Role r : instance.roles) {
-                if (currentAssignment.get(r) == null && r.contains(i)) {
-                    currentAssignment.put(r, i);
-
-                    // Current performance critical code
-                    // Can we make verify (much) faster?
-                    // Like, a fuckload faster
-                    // Might need to redesign scenes/roles/actors (as they are represented now)
-
-                    if (Verifier.partialVerify(currentAssignment, 
-                        instance.scenes, instance.roles)) {
-                            // do nothing
-                    }
-                    else {
-                        currentAssignment.remove(r, i);
-                    }
-
-                    //
-                }
+        for (Role role : roles) {
+            for (Actor actor : actors) {
+                if (actor.canAssign(role)) actor.assign(role);
             }
         }
 
-        int sa = instance.k + 1;
-        for (Role r : instance.roles)
-            if (currentAssignment.get(r) == null) 
-                currentAssignment.put(r, sa++);
+        int superActor = k + 1;
+        for (Role role : roles) {
+            if (role.assignedTo == null) {
+                Actor actor = new Actor(superActor++);
+                actor.assign(role);
+                actors.add(actor);
+            }
+        }
     }
 
-    @Override
-    public String toString() {
-        return currentAssignment != null ? currentAssignment.toString() : "No current assignment";
+    public boolean localSearchStep() {
+        // Find actor to give additional role
+        Actor plus = instance.actors.get(rng.nextInt(instance.actors.size()));
+        // Try again if superactor
+        if (plus.id > instance.k) return false;
+        // Try again if it would mean additional assignments
+        if (plus.assignedRoles.size() == 0) return false;
+
+        // Find test role
+        Role additional = plus.canPlay.get(rng.nextInt(plus.canPlay.size()));
+
+        // If not an option, try again
+        if (!plus.canAssign(additional)) return false;
+
+        boolean better = false;
+        if (additional.assignedTo.assignedRoles.size() == 1) better = true;
+        plus.assign(additional);
+        return better;
     }
 
     public void printSolution() {
-        HashSet<Integer> assigned = new HashSet<>();
-        for (int v : currentAssignment.values())
-            assigned.add(v);
-
+        ArrayList<Actor> assigned = new ArrayList<>();
+        for (Actor a : instance.actors) if (a.assignedRoles.size() > 0) assigned.add(a);
         System.out.println(assigned.size());
-
-        for (int actor : assigned) {
-            String s = "";
-            int count = 0;
-            for (Role r : currentAssignment.keySet()) {
-                if (currentAssignment.get(r) == actor) {
-                    s += " " + r.getId();
-                    count++;
-                }
+        for (Actor a : assigned) {
+            String s = a.id + " " + a.assignedRoles.size();
+            for (Role r : a.assignedRoles) {
+                s += " " + r.id;
             }
-            s = actor + " " + count + s;
             System.out.println(s);
         }
-
     }
 
     public static void main(String[] args) {
-        RBInstanceBean bean = readRBInstance();
-        Heuristic heu = new Heuristic(bean);
-        heu.printSolution();
-    }
+        Instance instance = Instance.readInstance();
+        Heuristic heuristic = new Heuristic(instance);
 
-    private static RBInstanceBean readRBInstance() {
-        try (
-            final BufferedReader stdin = new BufferedReader(
-                new InputStreamReader(System.in)
-            )) {
-
-                int n = Integer.parseInt(stdin.readLine()); // Roles
-                int s = Integer.parseInt(stdin.readLine()); // Scenes
-                int k = Integer.parseInt(stdin.readLine()); // Actors
-
-                ArrayList<Role> roles = new ArrayList<>(n);
-                ArrayList<Scene> scenes = new ArrayList<>(s);
-
-                for (int i = 1; i <= n; i++) roles.add(new Role(i));
-                for (int i = 1; i <= s; i++) scenes.add(new Scene(i));
-
-                // Read what roles can be played by what actors
-                for (int i = 0; i < n; i++) {
-                    String[] nums = stdin.readLine().split(" ");
-                    for (int j = 1; j < nums.length; j++) 
-                        roles.get(i).add(Integer.parseInt(nums[j]));
-                }
-
-                // Read what roles participate in what scenes
-                for (int i = 0; i < s; i++) {
-                    String[] nums = stdin.readLine().split(" ");
-                    for (int j = 1; j < nums.length; j++) {
-                        scenes.get(i).add(roles.get(Integer.parseInt(nums[j]) - 1));
-                    }
-                }
-
-                return new RBInstanceBean(n, s, k, roles, scenes);
-                
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
+        int steps = 3000;
+        for (int i = 0; i < steps; i++) {
+            heuristic.localSearchStep();
         }
-
-        return null;
+        heuristic.printSolution();
     }
 
-    static class RBInstanceBean {
-        final int n, s, k;
-        final ArrayList<Role> roles;
-        final ArrayList<Scene> scenes;
-
-        RBInstanceBean(int n, int s, int k, ArrayList<Role> roles, ArrayList<Scene> scenes) {
-            this.n = n;
-            this.s = s;
-            this.k = k;
-            this.roles = roles;
-            this.scenes = scenes;
-        }
-    }
 }
