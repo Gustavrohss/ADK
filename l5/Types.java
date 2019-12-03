@@ -26,6 +26,14 @@ class Actor {
     public boolean canAssign(Role r) {
         if (!canPlay.contains(r)) return false;
 
+        if (r.assignedTo != null && r.assignedTo.equals(d1)) {
+            if (d1.assignedRoles.size() == 1) return false;
+        }
+
+        if (r.assignedTo != null && r.assignedTo.equals(d2)) {
+            if (d2.assignedRoles.size() == 1) return false;
+        }
+
         if (id == 1 || id == 2) {
             Actor d = id == 1 ? d2 : d1;
             for (Scene s : r.inScenes) {
@@ -33,14 +41,6 @@ class Actor {
                     return false;
             }
             return true;
-        }
-
-        if (r.assignedTo != null && r.assignedTo.equals(d1)) {
-            if (d1.assignedRoles.size() == 1) return false;
-        }
-
-        if (r.assignedTo != null && r.assignedTo.equals(d2)) {
-            if (d2.assignedRoles.size() == 1) return false;
         }
 
         for (Scene s : r.inScenes) {
